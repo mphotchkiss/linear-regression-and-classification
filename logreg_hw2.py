@@ -80,9 +80,12 @@ def main():
 #               applying the logistic function to z[i]
 ######################################################################
 def logistic(z):
-  raise Exception('Student error: You haven\'t implemented the logistic calculation yet.')
-  return logit_z
+  logistic_vector_func = np.vectorize(logistic_func) #https://numpy.org/doc/stable/reference/generated/numpy.vectorize.html
+  return logistic_vector_func(z)
 
+def logistic_func(x):
+  # the logistic of x
+  return 1/(1+np.exp(np.e, -x))
 
 ######################################################################
 # Q3.2 calculateNegativeLogLikelihood 
