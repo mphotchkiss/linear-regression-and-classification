@@ -8,8 +8,8 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S')
 
 # GLOBAL PARAMETERS FOR STOCHASTIC GRADIENT DESCENT
-step_size=0.0001
-max_iters=1000
+step_size=0.0005
+max_iters=2000
 
 def main():
 
@@ -62,8 +62,11 @@ def main():
   # Write the code to make your test submission here
   ####################################################
 
-  raise Exception('Student error: You haven\'t implemented the code in main() to make test predictions.')
-
+  X_test_bias = dummyAugment(X_test)
+  test_out = np.concatenate((np.expand_dims(np.array(range(np.shape(X_test)[0]),dtype=int), axis=1), X_test_bias@w >= 0), axis=1)
+  header = np.array([["id", "type"]])
+  test_out = np.concatenate((header, test_out))
+  np.savetxt('test_predicted.csv', test_out, fmt='%s', delimiter=',')
 
 
 ######################################################################
@@ -80,12 +83,7 @@ def main():
 #               applying the logistic function to z[i]
 ######################################################################
 def logistic(z):
-  logistic_vector_func = np.vectorize(logistic_func) #https://numpy.org/doc/stable/reference/generated/numpy.vectorize.html
-  return logistic_vector_func(z)
-
-def logistic_func(x):
-  # the logistic of x
-  return 1/(1+np.exp(np.e, -x))
+  return 1/(1+np.exp(-z))
 
 ######################################################################
 # Q3.2 calculateNegativeLogLikelihood 
@@ -106,10 +104,18 @@ def logistic_func(x):
 #   nll --  the value of the negative log-likelihood
 ######################################################################
 def calculateNegativeLogLikelihood(X,y,w):
-  raise Exception('Student error: You haven\'t implemented the negative log likelihood calculation yet.')
+  nll = 0
+  # for each row in X, with index i
+  for i, xi in enumerate(X):
+    # subtract the log( P ( yi | xi, w) )
+    nll -= log_P_of_row_i(np.array(xi), y[i], w)
   return nll
 
-
+# computes the log( P ( yi | xi, w) )
+def log_P_of_row_i(xi, yi, w):
+  w_transpose_xi = np.transpose(w)@xi
+  logistic_w_transpose_xi = logistic(w_transpose_xi)
+  return yi * np.log(logistic_w_transpose_xi + 0.0000001) + (1-yi) * np.log(1 - logistic_w_transpose_xi + 0.0000001)
 
 
 ######################################################################
@@ -143,17 +149,10 @@ def trainLogistic(X,y, max_iters=max_iters, step_size=step_size):
     
     # Keep track of losses for plotting
     losses = [calculateNegativeLogLikelihood(X,y,w)]
-    
     # Take up to max_iters steps of gradient descent
     for i in range(max_iters):
-    
-               
-        # Todo: Compute the gradient over the dataset and store in w_grad
-        # .
-        # . Implement equation 9.
-        # .
-     
-        raise Exception('Student error: You haven\'t implemented the gradient calculation for trainLogistic yet.')
+      
+        w_grad = np.transpose(X)@(logistic(X@w) - y)
 
         # This is here to make sure your gradient is the right shape
         assert(w_grad.shape == (X.shape[1],1))
@@ -164,7 +163,6 @@ def trainLogistic(X,y, max_iters=max_iters, step_size=step_size):
         # Calculate the negative log-likelihood with the 
         # new weight vector and store it for plotting later
         losses.append(calculateNegativeLogLikelihood(X,y,w))
-        
     return w, losses
 
 
@@ -185,7 +183,8 @@ def trainLogistic(X,y, max_iters=max_iters, step_size=step_size):
 #
 ######################################################################
 def dummyAugment(X):
-  raise Exception('Student error: You haven\'t implemented dummyAugment yet.')
+  new_X = np.ones((np.shape(X)[0], 1))
+  return np.hstack((new_X, X))
 
 
 
